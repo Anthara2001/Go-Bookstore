@@ -37,7 +37,7 @@ func GetBookById(res http.ResponseWriter, req *http.Request) {
 
 func CreateBook(res http.ResponseWriter, req *http.Request) {
 	createBook := &models.Book{}
-	utils.ParseBody(req, CreateBook)
+	utils.ParseBody(req, createBook)
 	b := createBook.CreateBook()
 	bookData, _ := json.Marshal(b)
 	res.Header().Set("Content-Type", "application/json")
@@ -68,15 +68,19 @@ func UpdateBook(res http.ResponseWriter, req *http.Request) {
 	}
 	updateBook := &models.Book{}
 	utils.ParseBody(req, updateBook)
-	bookData, _ := models.GetBookById(ID)
+	bookDetails, db := models.GetBookById(ID)
 	if updateBook.Name != "" {
-		bookData.Name = updateBook.Name
+		bookDetails.Name = updateBook.Name
 	}
 	if updateBook.Author != "" {
-		bookData.Author = updateBook.Author
+		bookDetails.Author = updateBook.Author
 	}
 	if updateBook.Publication != "" {
-		bookData.Publication = updateBook.Publication
+		bookDetails.Publication = updateBook.Publication
 	}
-
+	db.Save(&bookDetails)
+	bookData, _ := json.Marshal(bookDetails)
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(http.StatusOK)
+	res.Write(bookData)
 }
